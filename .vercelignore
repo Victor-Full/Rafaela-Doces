@@ -1,0 +1,5 @@
+.npm-cache/
+.astro/
+dist/
+.env*
+!.env.example

@@ -1,0 +1,25 @@
+---
+import type { ImageMetadata } from 'astro';
+import ProductPhoto from './ProductPhoto.astro';
+import WhatsAppLink from './WhatsAppLink.astro';
+import { categories } from '../data/menu';
+import type { MenuItem } from '../data/menu';
+
+interface Props {
+  item: MenuItem;
+  photo: { src: string };
+  original: ImageMetadata;
+}
+
+const { item, photo, original } = Astro.props;
+const category = categories.find(({ id }) => id === item.category);
+---
+
+<li class="menu-card" data-category={item.category} data-name={item.name} id={item.id}>
+  <ProductPhoto crop={item.crop} photo={photo} original={original} />
+  <div class="menu-card-body">
+    <p class="menu-card-category">{category?.name}</p>
+    <h3>{item.name}</h3>
+    <WhatsAppLink label="Consultar" product={item.name} class="menu-card-link" />
+  </div>
+</li>

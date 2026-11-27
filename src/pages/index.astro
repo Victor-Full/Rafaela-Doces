@@ -1,0 +1,294 @@
+---
+import { getImage } from 'astro:assets';
+import '@fontsource-variable/dm-sans';
+import '@fontsource-variable/dm-sans/wght-italic.css';
+import '../styles/site.css';
+import collage from '../assets/produtos.jpg';
+import rosca from '../assets/rosca-doce.jpg';
+import Icon from '../components/Icon.astro';
+import MenuCard from '../components/MenuCard.astro';
+import ProductPhoto from '../components/ProductPhoto.astro';
+import WhatsAppLink from '../components/WhatsAppLink.astro';
+import { categories, menu } from '../data/menu';
+import { brand, hasWhatsApp, instagramUrl, whatsappLink } from '../data/site';
+
+const [menuPhoto, heroPhoto, heroMobile] = await Promise.all([
+  getImage({ src: collage, format: 'webp', quality: 78 }),
+  getImage({ src: rosca, format: 'webp', quality: 80 }),
+  getImage({ src: rosca, format: 'webp', width: 480, quality: 78 }),
+]);
+const itemPhotos = {
+  collage: { photo: menuPhoto, original: collage },
+  rosca: { photo: heroMobile, original: rosca },
+};
+const categoryPreviews = categories.flatMap((category) => {
+  const items = menu.filter((item) => item.category === category.id);
+  const cover = items.find((item) => item.id === category.cover) ?? items[0];
+  return cover ? [{ ...category, item: cover, count: items.length }] : [];
+});
+
+const canonical = Astro.site?.href;
+const socialImage = Astro.site && new URL(heroPhoto.src, Astro.site);
+const isPreview = import.meta.env.VERCEL_ENV === 'preview';
+const title = `${brand.name} | Cardápio de salgados, doces e pães`;
+const socialLinks = [
+  ...(hasWhatsApp ? [whatsappLink().split('?')[0]] : []),
+  ...(instagramUrl ? [instagramUrl] : []),
+];
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'FoodEstablishment',
+  name: brand.name,
+  description: brand.description,
+  url: canonical,
+  logo: Astro.site && new URL(brand.logo, Astro.site).href,
+  image: socialImage?.href,
+  sameAs: socialLinks.length ? socialLinks : undefined,
+  hasMenu: {
+    '@type': 'Menu',
+    name: 'Cardápio',
+    url: Astro.site && new URL('#cardapio', Astro.site).href,
+    inLanguage: 'pt-BR',
+    hasMenuSection: categories.map((category) => ({
+      '@type': 'MenuSection',
+      name: category.name,
+      hasMenuItem: menu.filter((item) => item.category === category.id).map((item) => ({
+        '@type': 'MenuItem',
+        name: item.name,
+        url: Astro.site && new URL(`#${item.id}`, Astro.site).href,
+      })),
+    })),
+  },
+};
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f8f4eb" />
+    <title>{title}</title>
+    <meta name="description" content={brand.description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {isPreview && <meta name="robots" content="noindex" />}
+    <link rel="icon" type="image/jpeg" href={brand.logo} />
+    <link rel="alternate" href="/cardapio.md" type="text/markdown" title="Cardápio em texto" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content={brand.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={brand.description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    {socialImage && <meta property="og:image" content={socialImage.href} />}
+    {socialImage && <meta property="og:image:alt" content="Rosca doce da Rafaela Macedo Kitandas" />}
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData).replace(/</g, '\\u003c')} />
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+    <header class="site-header" id="inicio">
+      <div class="container header-inner">
+        <a class="brand" href="#inicio">
+          <img src={brand.logo} alt="" width="687" height="694" />
+          <span>Rafaela Macedo <small>Kitandas</small></span>
+        </a>
+        <nav class="site-nav" aria-label="Navegação principal">
+          <a href="#cardapio">Cardápio</a>
+          <a href="#pedidos">Como pedir</a>
+        </nav>
+        <WhatsAppLink label="WhatsApp" class="button button-outline header-contact" />
+      </div>
+    </header>
+
+    <main id="conteudo">
+      <section class="hero-band" aria-labelledby="hero-title">
+        <div class="hero container">
+          <div class="hero-copy">
+            <p class="eyebrow"><Icon name="wheat" size={20} /> Cardápio artesanal</p>
+            <h1 id="hero-title">Kitandas com<br class="hero-break" /> <em>gosto de casa.</em></h1>
+            <p class="hero-description">Salgados, doces e pães para acompanhar o café ou dividir em boa companhia.</p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#cardapio">Ver cardápio</a>
+              <a class="how-link" href="#pedidos">Como pedir</a>
+            </div>
+          </div>
+          <figure class="hero-photo">
+            <img src={heroPhoto.src} srcset={`${heroMobile.src} 480w, ${heroPhoto.src} 720w`}
+              sizes="(max-width: 800px) 100vw, 50vw" width={rosca.width} height={rosca.height}
+              alt="Rosca doce dourada em um prato branco, com folhagem ao fundo" fetchpriority="high" />
+            <figcaption>Rosca doce</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <nav class="category-overview" aria-label="Categorias do cardápio">
+        <ul class="container category-list">
+          {categoryPreviews.map(({ id, name, item, count }) => (
+            <li>
+              <a class="category-tile" data-category-shortcut={id} href={`#${item.id}`}>
+                <ProductPhoto crop={item.crop} {...itemPhotos[item.source ?? 'collage']} />
+                <span class="category-copy">
+                  <strong>{name}</strong>
+                  <span>{count === 1 ? '1 opção' : `${count} opções`}</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <section class="menu-section" id="cardapio" tabindex="-1" aria-labelledby="menu-title">
+        <div class="container">
+          <div class="menu-heading">
+            <h2 id="menu-title">Nosso cardápio</h2>
+            <p>Consulte valores e disponibilidade pelo WhatsApp.</p>
+          </div>
+          <div class="menu-tools" data-menu-tools hidden>
+            <div class="menu-filters" role="group" aria-label="Filtrar cardápio" data-menu-filters>
+              <button type="button" data-filter="todos" aria-pressed="true"><Icon name="menu" size={17} /> Todos</button>
+              {categories.map((category) => (
+                <button type="button" data-filter={category.id} aria-pressed="false"><Icon name={category.icon} size={17} /> {category.name}</button>
+              ))}
+            </div>
+            <label class="menu-search">
+              <Icon name="search" size={21} />
+              <span class="sr-only">Buscar no cardápio</span>
+              <input type="search" placeholder="Buscar no cardápio" data-menu-search aria-controls="produtos" />
+            </label>
+          </div>
+          <p class="menu-status" role="status" data-menu-status hidden></p>
+          <div class="menu-empty" data-menu-empty hidden>
+            <button type="button" class="button button-outline" data-menu-reset>Limpar busca e filtros</button>
+          </div>
+
+          <ul class="menu-grid" id="produtos" aria-label="Produtos do cardápio" data-menu-grid>
+            {menu.map((item) => (
+              <MenuCard item={item} {...itemPhotos[item.source ?? 'collage']} />
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section class="orders" id="pedidos" aria-labelledby="orders-title">
+        <div class="container orders-inner">
+          <div class="order-copy">
+            <p class="eyebrow"><span></span> Como pedir</p>
+            <h2 id="orders-title">Seu pedido pelo WhatsApp.</h2>
+            <p>Envie os nomes e as quantidades das suas escolhas. Confirme valores, disponibilidade e os detalhes do pedido na conversa.</p>
+          </div>
+          <div class="order-contact">
+            <WhatsAppLink label="Pedir pelo WhatsApp" class="button button-order" />
+            {!hasWhatsApp && <p>Contato disponível em breve.</p>}
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="rodape">
+      <div class="container footer-main">
+        <div class="footer-brand">
+          <a class="brand" href="#inicio">
+            <img src={brand.logo} alt="" width="687" height="694" loading="lazy" />
+            <span>Rafaela Macedo <small>Kitandas</small></span>
+          </a>
+          <p>Salgados, doces e pães artesanais.</p>
+          <a class="footer-social" href={instagramUrl ?? '#'}
+            target={instagramUrl ? '_blank' : undefined}
+            rel={instagramUrl ? 'noopener noreferrer' : undefined}>
+            <span class="footer-social-mark"><Icon name="instagram" size={21} /></span>
+            Instagram
+          </a>
+        </div>
+        <nav class="footer-column" aria-labelledby="footer-menu">
+          <h2 id="footer-menu">Cardápio</h2>
+          <ul class="footer-links">
+            {categoryPreviews.map(({ id, name, item }) => (
+              <li><a data-category-shortcut={id} href={`#${item.id}`}>{name}</a></li>
+            ))}
+          </ul>
+        </nav>
+        <div class="footer-column">
+          <h2>Pedidos</h2>
+          <ul class="footer-links">
+            <li><a href="#pedidos">Como pedir</a></li>
+          </ul>
+          <WhatsAppLink label="WhatsApp" class="button button-outline footer-whatsapp" />
+        </div>
+      </div>
+      <div class="container footer-credits">
+        <p>Desenvolvido pela <strong><a href="https://auracod.com.br/">AuraCod</a></strong></p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<script>
+  const tools = document.querySelector<HTMLElement>('[data-menu-tools]');
+  const search = document.querySelector<HTMLInputElement>('[data-menu-search]');
+  const status = document.querySelector<HTMLElement>('[data-menu-status]');
+  const empty = document.querySelector<HTMLElement>('[data-menu-empty]');
+  const reset = document.querySelector<HTMLButtonElement>('[data-menu-reset]');
+
+  function normalize(value: string) {
+    return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  if (tools && search && status && empty && reset) {
+    const buttons = [...tools.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+    const cards = [...document.querySelectorAll<HTMLElement>('[data-menu-grid] > [data-category]')]
+      .map((element) => ({ element, name: normalize(element.dataset.name ?? '') }));
+    const shortcuts = document.querySelectorAll<HTMLAnchorElement>('[data-category-shortcut]');
+    let activeCategory = 'todos';
+
+    const updateMenu = () => {
+      const terms = normalize(search.value).split(/\s+/);
+      let count = 0;
+
+      for (const button of buttons) {
+        button.setAttribute('aria-pressed', String(button.dataset.filter === activeCategory));
+      }
+
+      for (const { element, name } of cards) {
+        const matchesCategory = activeCategory === 'todos' || element.dataset.category === activeCategory;
+        element.hidden = !matchesCategory || !terms.every((term) => name.includes(term));
+        if (!element.hidden) count += 1;
+      }
+
+      status.textContent = count === 0 ? 'Nenhum produto encontrado.'
+        : count === 1 ? '1 produto encontrado.'
+        : `${count} produtos encontrados.`;
+      empty.hidden = count > 0;
+    };
+
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        activeCategory = button.dataset.filter ?? 'todos';
+        updateMenu();
+      });
+    }
+
+    for (const shortcut of shortcuts) {
+      const category = shortcut.dataset.categoryShortcut ?? 'todos';
+      shortcut.addEventListener('click', (event) => {
+        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        activeCategory = category;
+        search.value = '';
+        updateMenu();
+      });
+      shortcut.setAttribute('href', '#cardapio');
+    }
+
+    search.addEventListener('input', updateMenu);
+    reset.addEventListener('click', () => {
+      activeCategory = 'todos';
+      search.value = '';
+      updateMenu();
+      search.focus();
+    });
+
+    updateMenu();
+    tools.hidden = false;
+    status.hidden = false;
+  }
+</script>

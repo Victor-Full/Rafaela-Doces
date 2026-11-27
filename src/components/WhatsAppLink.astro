@@ -1,0 +1,22 @@
+---
+import Icon from './Icon.astro';
+import { hasWhatsApp, whatsappLink } from '../data/site';
+
+interface Props {
+  label: string;
+  product?: string;
+  class?: string;
+}
+
+const { label, product, class: className } = Astro.props;
+---
+
+<a class={className} href={whatsappLink(product)}
+  target={hasWhatsApp ? '_blank' : undefined}
+  rel={hasWhatsApp ? 'noopener noreferrer' : undefined}
+  aria-label={product ? `${label} sobre ${product} pelo WhatsApp` : undefined}>
+  <span class="whatsapp-mark">
+    <Icon name="whatsapp" size={25} />
+  </span>
+  <span>{label}</span>
+</a>

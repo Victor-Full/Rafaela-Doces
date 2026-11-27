@@ -1,0 +1,22 @@
+---
+import type { ImageMetadata } from 'astro';
+import type { MenuItem } from '../data/menu';
+
+interface Props {
+  crop: MenuItem['crop'];
+  photo: { src: string };
+  original: ImageMetadata;
+}
+
+const { crop: [left, top, width], photo, original } = Astro.props;
+const height = width * 4 / 5;
+const cropStyle = {
+  '--image-width': `${original.width / width * 100}%`,
+  '--image-left': `${-left / width * 100}%`,
+  '--image-top': `${-top / height * 100}%`,
+};
+---
+
+<div class="product-photo" style={cropStyle}>
+  <img src={photo.src} width={original.width} height={original.height} alt="" loading="lazy" decoding="async" />
+</div>
