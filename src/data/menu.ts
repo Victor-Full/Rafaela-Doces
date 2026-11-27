@@ -17,6 +17,7 @@ export interface MenuItem {
 }
 
 export type OrderProduct = Pick<MenuItem, 'name' | 'whatsappQuestion'>;
+export const maxOrderQuantity = 500;
 
 export function menuOrderMessage(product: OrderProduct, quantity = 1) {
   return `Olá, Rafaela! Vim pelo cardápio e gostaria de fazer este pedido.\n\n${quantity} × ${product.name}\n\n${product.whatsappQuestion}`;

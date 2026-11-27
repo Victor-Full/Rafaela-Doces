@@ -2,7 +2,7 @@
 import type { ImageMetadata } from 'astro';
 import ProductPhoto from './ProductPhoto.astro';
 import WhatsAppLink from './WhatsAppLink.astro';
-import { categories } from '../data/menu';
+import { categories, maxOrderQuantity } from '../data/menu';
 import type { MenuItem } from '../data/menu';
 
 interface Props {
@@ -14,6 +14,7 @@ interface Props {
 const { item, photo, original } = Astro.props;
 const category = categories.find(({ id }) => id === item.category);
 const quantityId = `quantidade-${item.id}`;
+const limitId = `${quantityId}-limite`;
 ---
 
 <li class="menu-card" data-category={item.category} data-name={item.name} id={item.id}>
@@ -27,9 +28,13 @@ const quantityId = `quantidade-${item.id}`;
         <div class="quantity-stepper">
           <button type="button" data-quantity-decrease aria-label={`Diminuir quantidade de ${item.name}`} disabled>−</button>
           <input id={quantityId} data-quantity-input type="number" inputmode="numeric" autocomplete="off"
-            min="1" max={Number.MAX_SAFE_INTEGER} step="1" value="1" required aria-label={`Quantidade de ${item.name}`} />
+            min="1" max={maxOrderQuantity} step="1" value="1" required aria-label={`Quantidade de ${item.name}`}
+            aria-describedby={limitId} />
           <button type="button" data-quantity-increase aria-label={`Aumentar quantidade de ${item.name}`}>+</button>
         </div>
+        <p id={limitId} class="quantity-limit" data-quantity-limit hidden>
+          Para mais de {maxOrderQuantity} unidades, combine pelo WhatsApp.
+        </p>
         <p class="sr-only" role="status" data-quantity-status></p>
       </div>
       <WhatsAppLink label="Consultar" product={item} class="menu-card-link" />
@@ -38,38 +43,49 @@ const quantityId = `quantidade-${item.id}`;
 </li>
 
 <script>
-  import { menuOrderMessage } from '../data/menu';
+  import { maxOrderQuantity, menuOrderMessage } from '../data/menu';
 
   for (const order of document.querySelectorAll<HTMLElement>('[data-product-order]')) {
     const control = order.querySelector<HTMLElement>('[data-order-quantity]');
     const input = order.querySelector<HTMLInputElement>('[data-quantity-input]');
     const decrease = order.querySelector<HTMLButtonElement>('[data-quantity-decrease]');
     const increase = order.querySelector<HTMLButtonElement>('[data-quantity-increase]');
+    const limit = order.querySelector<HTMLElement>('[data-quantity-limit]');
     const status = order.querySelector<HTMLElement>('[data-quantity-status]');
     const link = order.querySelector<HTMLAnchorElement>('.menu-card-link');
     const { orderName, orderQuestion } = order.dataset;
 
-    if (!control || !input || !decrease || !increase || !status || !link || !orderName || !orderQuestion) continue;
+    if (!control || !input || !decrease || !increase || !limit || !status || !link || !orderName || !orderQuestion) continue;
 
     const product = { name: orderName, whatsappQuestion: orderQuestion };
     const url = new URL(link.href);
     let quantity = 1;
 
-    const updateQuantity = (next: number) => {
-      quantity = next;
+    const updateQuantity = (next: number, announce = false) => {
+      const previous = quantity;
+      quantity = Math.min(maxOrderQuantity, Math.max(1, next));
+      const reachedLimit = quantity === maxOrderQuantity;
       decrease.disabled = quantity === 1;
-      increase.disabled = quantity === Number.MAX_SAFE_INTEGER;
+      increase.disabled = reachedLimit;
+      limit.hidden = !reachedLimit;
+      if (reachedLimit && previous !== maxOrderQuantity) {
+        status.textContent = limit.textContent;
+      } else if (announce) {
+        status.textContent = `Quantidade de ${product.name} alterada para ${quantity}.`;
+      }
       url.search = `?text=${encodeURIComponent(menuOrderMessage(product, quantity))}`;
       link.href = url.href;
     };
 
     const step = (change: number) => {
-      updateQuantity(quantity + change);
+      updateQuantity(quantity + change, true);
       input.value = String(quantity);
-      status.textContent = `Quantidade de ${product.name} alterada para ${quantity}.`;
     };
 
     const syncInput = () => {
+      if (input.validity.rangeOverflow) {
+        input.value = String(maxOrderQuantity);
+      }
       if (input.validity.valid && Number.isSafeInteger(input.valueAsNumber)) {
         updateQuantity(input.valueAsNumber);
       }
