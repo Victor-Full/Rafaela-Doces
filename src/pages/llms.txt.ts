@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro';
-import { brand, whatsappLink } from '../data/site';
+import { brand, sitePath, whatsappLink } from '../data/site';
 
 export const GET: APIRoute = ({ site }) => {
-  const home = site?.href ?? '/';
-  const menu = site ? new URL('cardapio.md', site).href : '/cardapio.md';
+  const home = site ? new URL(sitePath(), site).href : sitePath();
+  const menu = site ? new URL('cardapio.md', home).href : sitePath('cardapio.md');
   const text = [
     `# ${brand.name}`, '',
     `> ${brand.description}`, '',

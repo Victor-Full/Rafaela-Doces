@@ -10,7 +10,7 @@ import MenuCard from '../components/MenuCard.astro';
 import ProductPhoto from '../components/ProductPhoto.astro';
 import WhatsAppLink from '../components/WhatsAppLink.astro';
 import { categories, menu } from '../data/menu';
-import { brand, instagramUrl, whatsappProfileUrl } from '../data/site';
+import { brand, instagramUrl, sitePath, whatsappProfileUrl } from '../data/site';
 
 const [menuPhoto, heroPhoto, heroMobile] = await Promise.all([
   getImage({ src: collage, format: 'webp', quality: 78 }),
@@ -27,7 +27,7 @@ const categoryPreviews = categories.flatMap((category) => {
   return cover ? [{ ...category, item: cover, count: items.length }] : [];
 });
 
-const canonical = Astro.site?.href;
+const canonical = Astro.site && new URL(sitePath(), Astro.site).href;
 const socialImage = Astro.site && new URL(heroPhoto.src, Astro.site);
 const isPreview = import.meta.env.VERCEL_ENV === 'preview';
 const title = `${brand.name} | Cardápio de salgados, doces e pães`;
@@ -47,7 +47,7 @@ const structuredData = {
   hasMenu: {
     '@type': 'Menu',
     name: 'Cardápio',
-    url: Astro.site && new URL('#cardapio', Astro.site).href,
+    url: canonical && `${canonical}#cardapio`,
     inLanguage: 'pt-BR',
     hasMenuSection: categories.map((category) => ({
       '@type': 'MenuSection',
@@ -55,7 +55,7 @@ const structuredData = {
       hasMenuItem: menu.filter((item) => item.category === category.id).map((item) => ({
         '@type': 'MenuItem',
         name: item.name,
-        url: Astro.site && new URL(`#${item.id}`, Astro.site).href,
+        url: canonical && `${canonical}#${item.id}`,
       })),
     })),
   },
@@ -73,7 +73,7 @@ const structuredData = {
     {canonical && <link rel="canonical" href={canonical} />}
     {isPreview && <meta name="robots" content="noindex" />}
     <link rel="icon" type="image/jpeg" href={brand.logo} />
-    <link rel="alternate" href="/cardapio.md" type="text/markdown" title="Cardápio em texto" />
+    <link rel="alternate" href={sitePath('cardapio.md')} type="text/markdown" title="Cardápio em texto" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pt_BR" />
     <meta property="og:site_name" content={brand.name} />

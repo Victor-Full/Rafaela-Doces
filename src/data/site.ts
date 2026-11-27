@@ -1,7 +1,12 @@
+export function sitePath(path = '') {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+  return `${base}/${path}`;
+}
+
 export const brand = {
   name: 'Rafaela Macedo Kitandas',
   description: 'Cardápio de salgados, doces, bolos e pães da Rafaela Macedo Kitandas. Pedidos pelo WhatsApp.',
-  logo: '/images/logo-rafaela-macedo.jpg',
+  logo: sitePath('images/logo-rafaela-macedo.jpg'),
 };
 
 const configuredNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER?.trim() || '5564999235242';

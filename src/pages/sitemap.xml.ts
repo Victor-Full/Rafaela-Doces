@@ -1,7 +1,8 @@
 import type { APIRoute } from 'astro';
+import { sitePath } from '../data/site';
 
 export const GET: APIRoute = ({ site }) => {
-  const location = site?.href.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const location = site && new URL(sitePath(), site).href.replace(/&/g, '&amp;').replace(/</g, '&lt;');
   const sitemap = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
