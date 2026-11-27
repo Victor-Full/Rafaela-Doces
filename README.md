@@ -21,7 +21,7 @@ O workflow usa o endereço informado pelo GitHub Pages para configurar o caminho
 - Edite os nomes, as categorias, os enquadramentos e as perguntas de WhatsApp dos produtos em `src/data/menu.ts`. Os nomes foram descritos a partir das fotos fornecidas. Os arquivos originais estão em `src/assets` e a logo está em `public/images`.
 - Importe o projeto na Vercel com o preset Astro. O comando padrão gera a saída estática em `dist`.
 - O WhatsApp padrão é `+55 64 99923-5242`. Para usar outro número, configure `PUBLIC_WHATSAPP_NUMBER` com 55, DDD e número.
-- Configure `PUBLIC_INSTAGRAM_URL` com o endereço completo do perfil. Enquanto a variável estiver vazia, o atalho tem destino `#`.
+- O atalho do Instagram abre o perfil `@rafaelamacedo21`. Para usar outro perfil, configure `PUBLIC_INSTAGRAM_URL` com o endereço completo.
 - Configure `SITE_URL` com o endereço público definitivo, incluindo `https://`. Na Vercel, o código usa `VERCEL_PROJECT_PRODUCTION_URL` quando a variável de sistema está disponível e `SITE_URL` está vazia.
 - Localmente, copie `.env.example` para `.env` se quiser testar essas configurações. Na Vercel, salve as variáveis no projeto antes de fazer um novo deploy.
 

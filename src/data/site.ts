@@ -18,8 +18,8 @@ if (!/^55[1-9]\d{9,10}$/.test(whatsappNumber)) {
 
 export const whatsappProfileUrl = `https://wa.me/${whatsappNumber}`;
 
-const configuredInstagram = import.meta.env.PUBLIC_INSTAGRAM_URL?.trim();
-export const instagramUrl = configuredInstagram?.split(/[?#]/, 1)[0] || undefined;
+const configuredInstagram = import.meta.env.PUBLIC_INSTAGRAM_URL?.trim() || 'https://www.instagram.com/rafaelamacedo21/';
+export const instagramUrl = configuredInstagram.split(/[?#]/, 1)[0] || undefined;
 
 if (instagramUrl && !/^https:\/\/(?:www\.)?instagram\.com\/[a-z\d._]+\/?$/i.test(instagramUrl)) {
   throw new Error('Configure PUBLIC_INSTAGRAM_URL com o endereço completo do perfil do Instagram.');
