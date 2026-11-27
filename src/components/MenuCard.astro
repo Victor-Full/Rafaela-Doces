@@ -13,6 +13,7 @@ interface Props {
 
 const { item, photo, original } = Astro.props;
 const category = categories.find(({ id }) => id === item.category);
+const quantityId = `quantidade-${item.id}`;
 ---
 
 <li class="menu-card" data-category={item.category} data-name={item.name} id={item.id}>
@@ -20,6 +21,69 @@ const category = categories.find(({ id }) => id === item.category);
   <div class="menu-card-body">
     <p class="menu-card-category">{category?.name}</p>
     <h3>{item.name}</h3>
-    <WhatsAppLink label="Consultar" product={item.name} class="menu-card-link" />
+    <div class="menu-card-actions" data-product-order data-order-name={item.name} data-order-question={item.whatsappQuestion}>
+      <div class="order-quantity" data-order-quantity hidden>
+        <label for={quantityId}>Quantidade</label>
+        <div class="quantity-stepper">
+          <button type="button" data-quantity-decrease aria-label={`Diminuir quantidade de ${item.name}`} disabled>−</button>
+          <input id={quantityId} data-quantity-input type="number" inputmode="numeric" autocomplete="off"
+            min="1" max={Number.MAX_SAFE_INTEGER} step="1" value="1" required aria-label={`Quantidade de ${item.name}`} />
+          <button type="button" data-quantity-increase aria-label={`Aumentar quantidade de ${item.name}`}>+</button>
+        </div>
+        <p class="sr-only" role="status" data-quantity-status></p>
+      </div>
+      <WhatsAppLink label="Consultar" product={item} class="menu-card-link" />
+    </div>
   </div>
 </li>
+
+<script>
+  import { menuOrderMessage } from '../data/menu';
+
+  for (const order of document.querySelectorAll<HTMLElement>('[data-product-order]')) {
+    const control = order.querySelector<HTMLElement>('[data-order-quantity]');
+    const input = order.querySelector<HTMLInputElement>('[data-quantity-input]');
+    const decrease = order.querySelector<HTMLButtonElement>('[data-quantity-decrease]');
+    const increase = order.querySelector<HTMLButtonElement>('[data-quantity-increase]');
+    const status = order.querySelector<HTMLElement>('[data-quantity-status]');
+    const link = order.querySelector<HTMLAnchorElement>('.menu-card-link');
+    const { orderName, orderQuestion } = order.dataset;
+
+    if (!control || !input || !decrease || !increase || !status || !link || !orderName || !orderQuestion) continue;
+
+    const product = { name: orderName, whatsappQuestion: orderQuestion };
+    const url = new URL(link.href);
+    let quantity = 1;
+
+    const updateQuantity = (next: number) => {
+      quantity = next;
+      decrease.disabled = quantity === 1;
+      increase.disabled = quantity === Number.MAX_SAFE_INTEGER;
+      url.search = `?text=${encodeURIComponent(menuOrderMessage(product, quantity))}`;
+      link.href = url.href;
+    };
+
+    const step = (change: number) => {
+      updateQuantity(quantity + change);
+      input.value = String(quantity);
+      status.textContent = `Quantidade de ${product.name} alterada para ${quantity}.`;
+    };
+
+    const syncInput = () => {
+      if (input.validity.valid && Number.isSafeInteger(input.valueAsNumber)) {
+        updateQuantity(input.valueAsNumber);
+      }
+    };
+
+    decrease.addEventListener('click', () => step(-1));
+    increase.addEventListener('click', () => step(1));
+    input.addEventListener('input', syncInput);
+    input.addEventListener('change', syncInput);
+    input.addEventListener('blur', () => {
+      input.value = String(quantity);
+    });
+
+    syncInput();
+    control.hidden = false;
+  }
+</script>

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { brand, hasWhatsApp, whatsappLink } from '../data/site';
+import { brand, whatsappLink } from '../data/site';
 
 export const GET: APIRoute = ({ site }) => {
   const home = site?.href ?? '/';
@@ -7,11 +7,11 @@ export const GET: APIRoute = ({ site }) => {
   const text = [
     `# ${brand.name}`, '',
     `> ${brand.description}`, '',
-    hasWhatsApp ? 'Os pedidos são feitos na conversa pelo WhatsApp.' : 'O contato comercial para pedidos será disponibilizado no site.', '',
+    'Os pedidos são feitos na conversa pelo WhatsApp.', '',
     '## Cardápio e pedidos', '',
     `- [Cardápio online](${home}): produtos e informações sobre o pedido.`,
     `- [Cardápio em Markdown](${menu}): lista de produtos por categoria.`,
-    ...(hasWhatsApp ? [`- [WhatsApp para pedidos](${whatsappLink()}): canal de atendimento.`] : []),
+    `- [WhatsApp para pedidos](${whatsappLink()}): canal de atendimento.`,
     '',
   ].join('\n');
 

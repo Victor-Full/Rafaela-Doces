@@ -10,7 +10,7 @@ import MenuCard from '../components/MenuCard.astro';
 import ProductPhoto from '../components/ProductPhoto.astro';
 import WhatsAppLink from '../components/WhatsAppLink.astro';
 import { categories, menu } from '../data/menu';
-import { brand, hasWhatsApp, instagramUrl, whatsappLink } from '../data/site';
+import { brand, instagramUrl, whatsappProfileUrl } from '../data/site';
 
 const [menuPhoto, heroPhoto, heroMobile] = await Promise.all([
   getImage({ src: collage, format: 'webp', quality: 78 }),
@@ -32,7 +32,7 @@ const socialImage = Astro.site && new URL(heroPhoto.src, Astro.site);
 const isPreview = import.meta.env.VERCEL_ENV === 'preview';
 const title = `${brand.name} | Cardápio de salgados, doces e pães`;
 const socialLinks = [
-  ...(hasWhatsApp ? [whatsappLink().split('?')[0]] : []),
+  whatsappProfileUrl,
   ...(instagramUrl ? [instagramUrl] : []),
 ];
 const structuredData = {
@@ -43,7 +43,7 @@ const structuredData = {
   url: canonical,
   logo: Astro.site && new URL(brand.logo, Astro.site).href,
   image: socialImage?.href,
-  sameAs: socialLinks.length ? socialLinks : undefined,
+  sameAs: socialLinks,
   hasMenu: {
     '@type': 'Menu',
     name: 'Cardápio',
@@ -175,11 +175,10 @@ const structuredData = {
           <div class="order-copy">
             <p class="eyebrow"><span></span> Como pedir</p>
             <h2 id="orders-title">Seu pedido pelo WhatsApp.</h2>
-            <p>Envie os nomes e as quantidades das suas escolhas. Confirme valores, disponibilidade e os detalhes do pedido na conversa.</p>
+            <p>Escolha a quantidade no cardápio e toque em Consultar. Confira a mensagem e envie pelo WhatsApp para confirmar valores, disponibilidade e os detalhes do pedido.</p>
           </div>
           <div class="order-contact">
             <WhatsAppLink label="Pedir pelo WhatsApp" class="button button-order" />
-            {!hasWhatsApp && <p>Contato disponível em breve.</p>}
           </div>
         </div>
       </section>

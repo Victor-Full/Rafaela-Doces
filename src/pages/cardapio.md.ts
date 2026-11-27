@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { categories, menu } from '../data/menu';
-import { brand, hasWhatsApp, whatsappLink } from '../data/site';
+import { brand, whatsappLink } from '../data/site';
 
 export const GET: APIRoute = ({ site }) => {
   const text = [
@@ -15,9 +15,7 @@ export const GET: APIRoute = ({ site }) => {
       '',
     ]),
     '## Pedidos', '',
-    hasWhatsApp
-      ? `Consulte valores e disponibilidade pelo [WhatsApp](${whatsappLink()}).`
-      : 'O contato comercial para pedidos será disponibilizado no site.',
+    `Consulte valores e disponibilidade pelo [WhatsApp](${whatsappLink()}).`,
     '',
   ].join('\n');
 

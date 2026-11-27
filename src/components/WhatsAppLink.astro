@@ -1,20 +1,22 @@
 ---
 import Icon from './Icon.astro';
-import { hasWhatsApp, whatsappLink } from '../data/site';
+import { menuOrderMessage } from '../data/menu';
+import type { OrderProduct } from '../data/menu';
+import { whatsappLink } from '../data/site';
 
 interface Props {
   label: string;
-  product?: string;
+  product?: OrderProduct;
   class?: string;
 }
 
 const { label, product, class: className } = Astro.props;
+const message = product ? menuOrderMessage(product) : undefined;
 ---
 
-<a class={className} href={whatsappLink(product)}
-  target={hasWhatsApp ? '_blank' : undefined}
-  rel={hasWhatsApp ? 'noopener noreferrer' : undefined}
-  aria-label={product ? `${label} sobre ${product} pelo WhatsApp` : undefined}>
+<a class={className} href={whatsappLink(message)}
+  target="_blank" rel="noopener noreferrer"
+  aria-label={product ? `${label} sobre ${product.name} pelo WhatsApp` : undefined}>
   <span class="whatsapp-mark">
     <Icon name="whatsapp" size={25} />
   </span>
